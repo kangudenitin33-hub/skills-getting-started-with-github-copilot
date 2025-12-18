@@ -80,6 +80,7 @@ section h3 {
   background-color: #fafafa;
   border-radius: 3px;
   padding: 10px;
+  list-style-type: disc;
 }
 
 .activity-card li {
