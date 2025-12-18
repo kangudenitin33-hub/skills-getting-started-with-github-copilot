@@ -27,9 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
           <div class="participants-section">
             <strong>Participants:</strong>
-            <ul>
+            <ul class="participants-list">
               ${details.participants.length > 0
-                ? details.participants.map(p => `<li>${p}</li>`).join('')
+                ? details.participants.map(p => `<li><span class="participant-email">${p}</span> <span class="delete-participant" title="Remove" data-activity="${name}" data-email="${p}">&#128465;</span></li>`).join('')
                 : '<li><em>No participants yet</em></li>'}
             </ul>
           </div>
@@ -91,4 +91,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize app
   fetchActivities();
+  // Handle participant delete
+  document.addEventListener("click", async (event) => {
+    if (event.target.classList.contains("delete-participant")) {
+      const activity = event.target.getAttribute("data-activity");
+      const email = event.target.getAttribute("data-email");
+      if (confirm(`Remove ${email} from ${activity}?`)) {
+        try {
+          const response = await fetch(`/activities/${encodeURIComponent(activity)}/unregister?email=${encodeURIComponent(email)}`, { method: "DELETE" });
+          const result = await response.json();
+          if (response.ok) {
+            fetchActivities();
+            messageDiv.textContent = result.message || "Participant removed.";
+            messageDiv.className = "success";
+          } else {
+            messageDiv.textContent = result.detail || "Failed to remove participant.";
+            messageDiv.className = "error";
+          }
+          messageDiv.classList.remove("hidden");
+          setTimeout(() => messageDiv.classList.add("hidden"), 5000);
+        } catch (error) {
+          messageDiv.textContent = "Error removing participant.";
+          messageDiv.className = "error";
+          messageDiv.classList.remove("hidden");
+        }
+      }
+    }
+  });
 });
